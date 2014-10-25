@@ -1,0 +1,611 @@
+# Problemset Shrouded Fees
+
+  
+```{r include=FALSE}
+
+ps.dir =  'D:/libraries/RTutorShroudedFees/RTutorShroudedFees/inst/ps' # set to the folder in which this file is stored
+ps.file = 'Shrouded Fees.Rmd' # set to the name of this file
+user.name = '' # set to your user name
+
+library(RTutor)
+check.problem.set('Shrouded Fees', ps.dir, ps.file, user.name=user.name, reset=FALSE)
+
+# To check your solution in RStudio save (Ctrl-S) and then run all chunks (Ctrl-Alt-R)
+```
+Name: `r user.name`
+
+
+Authors:
+  Tobias Krabel (main author)
+  Sebastian Kranz (some modifications)
+  
+```{r " "}
+
+```
+
+Welcome to the interactive offline R tutorial about the AER paper **"The Impact of Shrouded Fees: Evidence From a Natural Experiment in the Indian Mutual Funds Market"** by Santosh Anagol and Hugh Hoikwang Kim. The paper studies how two policy changes in India affect the number of and investments in Indian funds.
+                     
+In this problem set, you will gradually analyze the main points of the paper. 
+
+## Exercise 1.1 -- Summary Statistics of Funds
+
+To get first insights into the data, you will do summary statistics on the initial amounts of money new Indian mutual funds collected and on the number of new funds started.  
+
+a) Getting the data
+
+In the directory of your problem set, you should have saved the file *"fund_data"*.
+Use the command 'read.table()' to load it. Assign the result to a variable called `fund`. To proceed, press the 'check' button to check whether your solution is correct.
+
+info("read.table()") # Run this line (Strg-Enter) to show info
+```{r "1.1 a)"}
+
+```
+#. continue
+
+You can look at the data by pressing the 'data' button above. It contains information on Indian equity funds. Anagol and Kim focus on this type of fund as its major clientele consists of retail investors, our subjects of interest. 
+
+info("Variables of Interest 1") # Run this line (Strg-Enter) to show info
+
+info("Closed- versus Open-End Funds") # Run this line (Strg-Enter) to show info
+
+b) Summarizing the data
+
+We want to create a summary statistics that shows the monthly average amounts of money the closed and open form of equity funds collects per year (in millions of 2009 U.S. dollars) and the number of new funds started on average per year.
+
+info("group_by() and summarise()") # Run this line (Strg-Enter) to show info
+
+Using the function `group_by`, let `fundg` be the grouped `fund` data, grouped by `year`.
+
+```{r "1.1 b) 3"}
+library(dplyr)
+```
+
+Now use `summarise` to create a summary `funds` of `fundg` with the following four columns (in this order): 
+   - `Open.amt` = a variable in which you store the mean of `na.omit(new_open_amt)`,
+   - `Closed.amt` = a variable in which you store the mean of `na.omit(new_closed_amt)`,
+   - `Open.no` = the mean of `na.omit(new_open_no)`, and
+   - `Closed.no` = the mean of `na.omit(new_closed_no)`. 
+
+info("na.omit()") # Run this line (Strg-Enter) to show info
+
+```{r "1.1 b) 4"}
+```
+
+With a natural experiment in the Indian funds market, Anagol and Kim study the impact of two law changes (in 2006 and 2008) on the number of new funds started and the money they collect. They want to find out if closed-end funds have exploited a law, that has forced them to shroud fees, by charging higher fees. Furthermore, they test whether closed-end funds became significantly more popular than open-end funds after that law change because investors did not realize the total amount of fees they have to pay to closed-end funds. It's important to note that open-end funds were forced to unshroud fees during the same period. 
+Take a look at `funds`. Focusing on fund starts, we can see a pattern that suggests that closed-end funds thrived between 2006 and 2008 compared to the other periods, whereas open-end funds did not significantly became more popular. Moreover, it appears that closed-end funds also allocated more new money during that period compared to the periods before and after.
+
+By the way: if you need more background information about the paper, read the info below.
+
+info("Background") # Run this line (Strg-Enter) to show info
+
+
+## Exercise 1.2 -- Figures of fund starts and inflows
+
+Numbers are nice, plots are nicer! To visualize the natural experiment Anagol and Kim were studying, an illustrative figure is convenient.
+
+We will check if we can see an effect that matches the predictions under the shrouding hypothesis when we plot fund starts and net flows into funds (we plot net flows to take the inflows to and outflows of existing funds into account).
+
+info("Variables of Interest 2") # Run this line (Strg-Enter) to show info
+
+Data preparation
+```{r "1.2 "}
+# Load fund data
+fund = read.table("fund_data")
+# Be careful! If you load a data frame, first check if its date variable has still a date class! In our case, R loaded the data frame but changed the date variable's class to 'factor'. As nobody likes factors in this problem set, we have to convert it back to the class 'date' (this is necessary for the plot)
+fund$date = as.Date(fund$date)
+
+# We generate the exact integer values of the two law changes' dates to draw two vertical dashed lines. 'as.Date()' converts the string into a date variable, which is in turn necessary for R to convert it into a numeric value
+april.2006 = as.numeric(as.Date("2006-04-04")) # Beginning of Regime 2
+feb.2008 = as.numeric(as.Date("2008-02-01"))   # Beginning of Regime 3
+```
+
+a) Open-end equity fund starts
+
+The following code generates a plot of open-end equity fund starts, stores it in `p2.1` and shows `p2.1`. I use the function 'qplot()' in the package "ggplot2". Run the code below.
+```{r "1.2 a)"}
+# load package
+library(ggplot2)
+
+# Plot open-end fund starts
+p2.1 = qplot(data = fund, x = date, y = new_open_no, geom = "bar", stat = "identity") +                                                 
+  geom_vline(aes(xintercept = april.2006), color = "#BB0000", linetype = "dashed", size = 1) +
+  geom_vline(aes(xintercept = feb.2008), color = "#BB0000", linetype = "dashed", size = 1)
+ 
+# 'geom = "bar"' calls a bar plot
+# By default, when used a bar plot, qplot thinks that we want to plot a histogram and counts the values defined in x. 'stat = "identity"' ensures that qplot really displays the numbers in y as bars
+# ggplot2 facilitates adding commands by just using the + symbol. In this case, we add vertical lines to illustrate the two law changes.
+
+# Show p2.1
+p2.1
+```
+
+
+b) Now, use the qplot function from above to plot:
+
+  1. *new_closed_no* (assign it to `p2.2`)
+  
+  2. *net_flow_open_amt* (assign it to `p2.3`)
+  
+  3. *net_flow_closed_amt* (assign it to `p2.4`)
+
+After you have generated the plots, show all three plots (in the same order you have generated them).
+
+```{r "1.2 b)"}
+# Plot closed-end equity fund starts
+
+# Plot open-end equity net flows
+
+# Plot closed-end equity net flows
+
+# Show all plots
+
+```
+
+If you want to display all four plots in one window, you can use the following function. Simply uncomment the code and run the chunk.
+```{r "1.2 b) 2",fig.width=10, fig.height=8, warning=FALSE}
+# Show one figure containing all four plots.
+multiplot(p2.1, p2.2, p2.3, p2.4, cols = 2)
+```
+
+
+c) Look at the different plots to answer the following questions (replace '???' with the right answer):
+```{r "1.2 c)"}
+# Do you see a particular effect in open-end fund starts and net flows during Regime 2 compared to the other periods??
+# sol31 = "???" # Assign "yes" or "no" to sol31 and remove the comment
+
+# How about closed_end fund starts and net flows? Do you see an effect there? 
+# sol32 = "???" # Assign "yes" or "no" to sol32 and remove the comment 
+
+```
+
+We observed that new closed-end equity funds have collected more money during Regime 2 compared to Regimes 1 and 3. Furthermore, it seems that closed-end equity funds became popular during Regime 2 but lost some of their appeal in Regime 3. 
+With respect to open-end funds, it appears that there is no remarkable effect on the two outcome variables (starts an net flows).
+
+
+## Exercise 2.1 -- Fee structure
+
+We answered two questions with respect to the shrouding hypothesis:
+1. Did closed-end funds become more popular in Regime 2 in comparison with Regimes 1 and 3?
+2. Did closed-end funds collect more money in Regime 2 in comparison with Regimes 1 and 3?
+
+Yet, one question is unanswered:
+Did closed-end funds really charge higher fees than open-end funds during Regime 2?
+
+a) Load "fee_data" and assign it to `fee`.
+
+```{r "2.1 a)"}
+```
+
+The data contains all equity funds started after law change 1. 
+
+info("Variables of Interest 3") # Run this line (Strg-Enter) to show info
+
+Remember that only closed-end funds were forced to charge initial issue expenses during Regime 2, whereas open-end funds were forced to charge entry loads.
+
+b) Our goal is to compare the percentage entry loads and initial issue expenses for open and closed funds. 
+
+First, use the function `filter` from the packge `dplyr` to generate two subsets from fees:
+
+  1. Let `open` be the subset of `fee` containing all open fund forms (fund_org == "Open").
+
+  2. Let `closed` be the subset of `fee` containing all closed fund forms (fund_org == "Closed"). 
+
+info("filter()") # Run this line (Strg-Enter) to show info
+
+```{r "2.1 b)"}
+library(dplyr)
+fee$date = as.Date(fee$date)
+
+# open = ... enter your code here
+# closed = ... enter your code here
+```
+You can take a look at `fee`, `open` or `closed` in the data explorer before moving on to the next exercise where we draw some plots. 
+
+
+c) illustrate fees with basic plot functions
+
+In the remainder of this exercise, you sequentially learn more of the basic plot commands in order to compare the fee structure of open and closed funds.
+
+For start, use the basic `plot(...)` function to plot the entry loads charges by open-end funds. Let `x` be the opening date and `y` be the entry loads charged.
+
+```{r "2.1 c)"}
+```
+
+Hint: You can type `colnames(open)` to see all column names, and access a column of a data.frame with the `$` operator, e.g. `open$fund_name`.
+
+d) Let us adapt the plot, by starting the y-Axis from 0 and adding nicer labels. Take the plot command from c) and add the following arguments:
+  - `xlab="Date"`
+  - `ylab="fees in %"`
+  - `ylim=c(0,6.5)`
+```{r "2.1 d)"}
+
+```
+
+e)
+Let us add to the plot from d) the initial issue expenses charged by closed-end funds. First copy the plot command. Then use the command 'points()' which has the same syntax as 'plot()'. Let x be the opening date and y be the initial issue expenses charged. Use the data frame `closed`. Don't forget to call the subset in the parameters x and y! AlsoAdd the parameter `col = "red"` to the call to make these points red.
+```{r "2.1 e)"}
+
+
+```
+
+We observe that closed-end funds generally charged higher fees than open-end funds. 
+
+f) 
+Finally, add the two vertical lines indicating the two law changes.
+Use the command `abline(v=...)` and replace the "..." with the two date variables `april.2006` and `feb.2008`.
+```{r "2.1 f)"}
+april.2006 = as.numeric(as.Date("2006-04-04")) # Beginning of Regime 2
+feb.2008 = as.numeric(as.Date("2008-02-01"))   # Beginning of Regime 3
+# Copy the plot and points command from above
+# First, draw the first law change in April 4, 2006.
+# abline(v=...)
+# Then, draw the second law change on January 31, 2008.
+# abline(v=...)
+
+```
+
+g) The code below generates a similar plot using the ggplot2 functions.
+
+First we add to the data frame fee generate a column `fee` that contains the total fee charged by the fund.
+```{r "2.1 g)"}
+# Helper function to convert NA to some other value
+convert.na =function(x,new.val) {
+  x[is.na(x)] = new.val
+  x
+}
+# Compute total fee
+fee$total_fee = convert.na(fee$entry_load_nfo,0)+convert.na(fee$actual_iie,0)
+```
+
+Then we generate a plot in which fees of closed and open fund are differentiated by color and shape. We use the package 'ggthemes' to show the plot in a Stata theme.
+
+```{r "2.1 g) 2"}
+library(ggthemes)
+
+# Show plot of fees of open and closed funds use a Stata theme
+qplot(data=fee,x=date,y=total_fee, color=fund_org,shape=fund_org,
+      size=I(3.5), geom="point",ylab="fee (%)",
+      main="Fees of closed funds (iie) vs open funds (entry load)") +
+  scale_shape_manual(values=c(19,1)) +
+  geom_vline(aes(xintercept = april.2006), color = "black", linetype = "dashed", size = 1) +
+  geom_vline(aes(xintercept = feb.2008), color = "black", linetype = "dashed", size = 1) +
+  theme_stata()
+```
+We see that in Regime 2 closed funds charge substantial higher fees than open funds. 
+
+### Unfortunately, our current data set has almost no fee observations for closed funds outside Regime 2. Why???
+
+info("plot with separated fund type and fee type") # Run this line (Strg-Enter) to show info
+While the syntax for ggplot takes some time to learn, it is extremely powerful in creating useful plots.
+
+### Economic insight:
+Our observations suggest that in Regime 2, closed-end equity funds may have become popular because they could hide fees by using the more shrouded fee structure. In Regime 3, when they were forced to reframe their fee structure from initial issue expenses to less shrouded entry loads, closed-end equity funds may have known that investors will not be willing to pay higher entry loads and stopped creating new funds. From the investors' perspective, they might not offer some additional benefit that justified the extra expense.
+
+
+The illustrative power of plots provided further insights into the topic. Yet, for a scientific research study, we need more than simple plots to further support our theory. That's when regressions become important.
+
+
+## Exercise 3.1 -- Regression Analysis for Equity Fund Starts
+
+Anagol and Kim statistically analyze the following questions:
+
+  1. Is the proportion of closed-end equity fund starts in Regime 2 significantly higher than in Regime 1?
+
+  2. Did closed-end equity funds collect significantly more money than open-end funds in Regime 2 compared to Regime 1?
+
+Anagol and Kim use a regression based difference-in-difference approach to identify the effect of law change 1 and law change 2. That is, they test whether the difference in the outcome variable between the closed and open form significantly changed from Regime 1 to Regime 2.
+
+`fund.long` contains all the information needed on equity funds (*type_fund* == 2) to run the regression on equity fund starts and net flows. We will focus on fund starts, but feel free to regress net flows in an extra R script.
+
+```{r "3.1 "}
+fund.long = read.table("regression_data")
+```
+
+Take a look at the table. We will now investigate the determinants of the number of newly started funds (for each type and month) `starts` using the following linear regression: 
+
+```
+starts = beta0 + beta1*closed_regime2 + beta2*closed_regime3 + beta3*regime2 + beta4*regime3 + beta5*closed + beta6*sensex1_return + beta7   *sensex3_return + beta8*time_trend + epsilon.
+```
+The relevant variables used in the regression are explained below.
+
+info("variables in regression") # Run this line (Strg-Enter) to show info
+
+We want to regress *starts* for different sample sizes. One regression shall comprise all months, the other regression shall only comprise the 22 months before Regime 2, the 22 months in Regime 2 and all 20 months available after Regime 3. We do this to see if the regression results improve if we have better comparison groups for Regime 2 (perhaps, some early months in Regime 1 bias our results).
+```{r "3.1  2"}
+library(dplyr)
+# restricted sample
+fund.short = filter(fund.long, month_year >= 533 & month_year <= 598)
+```
+
+We will collect all regression results and store them in different variables. After that, we will display all results in one table and take a look at it.
+
+a) First, we rund a simple OLS regression on fund starts
+
+Let's try our first regression.
+```{r "3.1 a)"}
+# OLS Equity fund starts with 120 months sample
+reg1 = lm(starts ~ time_trend + 
+              sensex1_return + sensex3_return + 
+              regime2 + regime3 + 
+              closed + 
+              closed_regime2 + closed_regime3,
+              data = fund.long)
+# Show a summary of reg1
+summary(reg1)
+```
+
+Change the code from above to regress equity fund starts with the restricted sample. Store the regression in `reg2`.
+```{r "3.1 a) 2"}
+# OLS Equity fund starts with 64 months sample
+# enter your regression here ...
+
+```
+
+To nicely compare the regression results for the two data sets, we can use the function `showreg` that is included in RTutor. (It is just a mapper to the useful functions in the package `texreg`). It shows regressions in a similar format as you see in published articles.
+```{r "3.1 a) 3"}
+showreg(list(reg1, reg2),custom.model.names = c("all months","restricted sample"))
+```
+
+We could also show the results as an HTML table:
+```{r "3.1 a) 4", results='asis'}
+showreg(list(reg1, reg2),custom.model.names = c("all months","restricted sample"), output="html", star.symbol="*")
+```
+also Latex output is possible. Yet, we will stick with the standard text output in in this problem set.
+
+#### How can we interpret the different regression coefficients?
+
+  - *time_trend* = effect of the time trend. E.g. > 0 --> from time to time, we observe more fund starts per month.
+  - *sensex1* and *sensex3* = effect of lagged returns. Do we observe more or less fund starts if the past returns were positive?
+  - *regime2* and *regime3* = do we observe more or less **open-end** fund starts in Regime 2 or Regime 3 **COMPARED To Regime 1**? (Note: Regime 1 is the baseline scenario! Furthermore, these effects are conditional on the time trend! Read the information "Diff-in-Diff" for clarification.) 
+  - *closed* = do we observe more or less closed-end fund starts than open-end starts in Regime 1?
+  - *closed_regime2* and *closed_regime3* = do we observe more or less closed-end fund starts in Regime 2 or Regime 3 **COMPARED To open-end fund starts in Regime 2 or Regime 3 and COMPARED To the difference between closed and open-end funds in Regime 1** (difference-in-difference)? 
+
+In other words, *closed_regime2* measures the difference of the dependent variable between closed and open-end funds in Regime 2 minus the difference between closed and open-end funds in Regime 1.
+
+*closed_regime2* and *closed_regime3* are the coefficients we are mostly interested in, as they show how closed-end funds react on law changes 1 and 2. The main prediction is that the coefficient on *closed_regime2* is greater than 0. *closed_regime3* should be at least not be significantly greater than *closed_regime2*, as we expect a decline in fund starts in Regime 3.
+
+
+The following info box provides you with more details on why the coefficient for the *closed_regime2* dummy can be interpreted as a diff-in-diff effect.
+info("Diff-in-diff") # Run this line (Strg-Enter) to show info
+
+Are the results significant? What is the qualitative relationship between the covariates and the outcome? 
+
+Answer the following questions by assigning the right answer to the variables and uncommenting the answers:
+```{r "3.1 a) 5"}
+# Take a look at the regression result that uses all months. 
+
+# 1. Compared to Regime 1, does the average number of open-end equity fund starts increase or decrease in Regimes 2 and 3?
+# a31 = "???" # add "increase" oder "decrease" here ...
+
+# 2. Is the coefficient on closed_regime2 significant?
+# a32 = "???" # add "yes" or "no" here ...
+
+# 3. Does the proportion of closed-end funds diminish after Regime 2? 
+# a33 = "???" # add "yes" or "no" here ...
+# QUESTION DOES NOT SEEM TO MAKE SENSE
+# WHY NOT ASK ABOUT QUANTITATIVE EFFECTS?
+
+
+```
+
+b) Correcting standard errors
+
+In an evaluation study, the assumption that the variance of an error term is constant might be incorrect. Sometimes, it is not realistic to suppose that the observations are always influenced by the same error. If the variance of the error term changes throughout the sample, we speak of heteroskedasticity. We would like to correct the standard errors because we are reluctant to celebrate significant coefficients whithout at least using heteroskedasticity robust standard errors.
+
+There is an econometrics haiku that funnily explains the effect of robust standard errors (see Angrist and Pischke (2008), pp. 6 and 7).
+```
+     T-stat looks too good.
+     Use robust standard errors-
+     significance gone.
+```
+R does not automatically adjust its standard errors for heteroskedasticity. You can use the argument `robust` of showreg to show robust standard errors, the argument `robust.type` specifies the type of robust standard error. For an overview about the types of robust standard errors, you can start with the help of `vcovHC` in the package 'sandwich' or read Hayes and Cai (2007).
+
+```{r "3.1 b)"}
+showreg(
+  list(reg1, reg1, reg2, reg2), 
+  stars = c(0.001,0.01,0.05,0.1),                                                                 
+  custom.model.names = c('All months','All months robust', 'Restricted', 'Restricted robust'),
+  robust=c(FALSE,TRUE,FALSE,TRUE), type="HC3"
+)
+```
+
+You should see that heteroskedasticity does not affect the values of the estimates. Allowing the variance to be variable just changes the standard errors' values. In our case, they increase for the *closed_regime2* coefficient.
+
+c) Poisson regression
+
+If the dependent variable Y is a count variable (a variable which takes on non-negative integer values) we can use a Poisson regression model assuming that the dependent variable Y has a Poisson distribution (see Wooldridge (2006)). In case of fund starts, it seems to be plausible that this variable is a count. We can apply a Poisson regression using the 'glm()' command and adding 'family = "Poisson"'.
+
+```{r "3.1 c)"}
+# Column 3 of Table 3
+reg3 = glm(starts ~ time_trend + 
+               sensex1_return + sensex3_return + 
+               regime2 + regime3 + 
+               closed + 
+               closed_regime2 + closed_regime3,
+               data = fund.long,
+               family = "poisson")
+
+# show the detailed results 
+summary(reg3)
+```
+
+Let `reg4` be the result of the Poisson regression model above for the limited sample in`fund.short`.
+```{r "3.1 c) 2"}
+# Column 4 of Table 3
+
+```
+
+Note: Using a Poisson model changes the interpretation of the coefficients. The numbers in the regression tables are the percentage changes when multiplied with 100. That is, e.g., the coefficient on the Closed x Regime 2 dummy constitutes a 437 percent change of the difference between closed-end and open-end fund starts.
+
+d) Comparing the 4 regressions
+
+Now use the function `showreg` to show all 4 regressions `reg1`-`reg4`. Use robust standard errors for all 4 regressions of type `HC3`. Pick well explaining `custom.model.names`.
+
+```{r "3.1 d)"}
+```
+
+The effect of *closed_regime2* is significant and positive, just as we expected. That means, that significantly more closed-end than open-end funds started during Regime 2. This effect increases with a more restricted sample. 
+The effect of *closed_regime3* is at least not significantly positive for the full sample, so that it seems plausible that the proportion of close-end funds decreased after Regime 2. 
+The latter effect suggests that investors did not invest in closed-end funds with generally higher fees because they received some special unobservable benefit. It's more plausible that the fee structure (more shrouded initial issue expenses versus less shrouded entry loads) was decisive. In Regime 2, closed-end funds exploited the fact that investors weren't cognizant of the higher initial issue expenses they were paying. In Regime 3, closed-end funds stopped creating new funds as they realized that investors will not be willing to pay higher entry loads.
+
+## Exercise 3.2 -- Exploring the Difference of the Difference
+
+In Exercise 3.1, I already explained the interpretation of the regression coefficients. Now, it is time to show you that some of the coefficients are in fact independent of the time trend. 
+
+Again, take a look at `fund.long`. To show you the interpretation of the coefficients on the *closed* dummy, the *closed_regime2* dummy and the *closed_regime 3* dummy, we will first calculate the average number of funds started for each regime and each fund form. 
+
+First, I will generate a column *regime1* that is equal to one if both *regime2* and *regime3* are 0, using the command 'mutate()'. I assign the preliminary result to `fund.long1`
+
+```{r "3.2 "}
+library(dplyr)
+fund.long1 = mutate(fund.long, regime1 = !regime2 & !regime3)
+```
+
+a) 
+It´s your turn!
+Generate a new column *regime* in `fund.long1` with the command 'mutate()'. It shall be calculated as follows:
+     regime = 1*regime1 + 2*regime2 + 3*regime3
+Store the result in `fund.long2`
+
+
+```{r "3.2 a)"}
+# fund.long2 = mutate()
+```
+
+b)
+The following code generates a new column *fund_form* in `fund.long2` that is equal to "closed" if the fund is a closed-end fund, and "open" if the fund is an open-end fund. Uncomment the code and run it.
+```{r "3.2 b)"}
+#fund.long3 = mutate(fund.long2, fund_form = ifelse(closed, "closed", "open"))
+
+```
+
+c)
+Now, let's calculate the averages of *starts* by *fund_form* and *regime*. We use our two old friends:
+1. Group `fund.long3` by *fund_form* and *regime* (in this order). Let the result be `fund.longg`
+2. Summarize `fund.longg` to `fund.longs`. Gererate one column *average_starts* = mean(*starts*).
+(Note: Ignore the "*". I use it to highlight the variables.) Show fund.longs afterwards
+
+```{r "3.2 c)"}
+# 1. group fund.long3
+# ...
+# 2. summarize fund.longg
+# ...
+```
+
+d) 
+Get a piece of paper and a pencil, it's time for mathematics :-).
+Here are the coefficients of regression 1.
+```{r "3.2 d)"}
+showreg(list(reg1), single.row=TRUE)
+```
+
+We focus on the coefficients on *closed*. *closed_regime2* and *closed_regime3*. 
+I use the numbers from `fund.longs` to illustrate that these coefficients really measure differences(-in-differences). 
+- coef on *closed* = avg closed starts in regime1 - avg open starts in regime1 = 0.03 - 1.81 = - 1.78
+- coef on *closed_regime2* = (avg closed starts in regime2 - avg open starts in regime2) - (avg closed starts in regime1 - avg open starts in regime1) = (2.05 - 1.82) - (0.03 - 1.81) = 0.23 + 1.78 = 2.01
+- coef on *closed_regime3* = (avg closed starts in regime3 - avg open starts in regime3) - (avg closed starts in regime1 - avg open starts in regime1) = (0.00 - 2.15) - (0.03 - 1.81) = - 2.15 + 1.78 = - 0.37
+
+
+## Exercise 4 -- Alternative Argument - Performance Comparison
+
+Looking at the results of our analysis, we could say: "The results are consistent with the shrouding argument". However, "being consistent" does not automatically mean "proving". Suppose another scientist argues: "Closed-end equity funds might become more popular during Regime 2 because they simply yielded higher returns than open-end funds that overcompensated the higher fees they charged". Since this is a plausible argument, we have to defend our own theory by showing that this argument cannot explain the popularity of closed-end funds during Regime 2.
+
+
+a) We will check whether closed-end equity funds outperformed open-end equity funds. Therefore, we load the table "3-Factor_data" and assign it to `factor.dat`. The data contains information on the performance of closed and open-end equity funds started in Regime 2.
+
+```{r "4 a)"}
+# Get the relevant data
+factor.dat = read.table("3-Factor_data")
+factor.dat$date = as.Date(factor.dat$date)
+
+library(dplyr)
+factor.dat = select(factor.dat, date, open_monthly_raw_return,
+    closed_monthly_raw_return, mean_sensex_monthly, monthly_bill,
+    closed_excess, open_excess,	market_excess, cmo_return,	hml, smb)
+```
+
+b) Let's do some summary statistics first to make ourselves familiar with the data.
+Summarize `factor.dat` to `factors`. Generate the following variables:
+   - *open_raw* = the average of *open_monthly_raw_return*,
+   - *closed_raw* = the average of *closed_monthly_raw_return*,
+   - *open_marketadj* = the average of *open_monthly_raw_return* - *mean_sensex_monthly*, and
+   - *closed_marketadj* = the average of *closed_monthly_raw_return* - *mean_sensex_monthly*.
+
+info("Variables of Interest 4") # Run this line (Strg-Enter) to show info
+
+```{r "4 b)"}
+```
+
+*x_marketadj* is the average return of a fund form controlled for marked movements. Take a look at the result. According to the summary, does it seem plausible that closed-end funds outperformed open-end funds during Regime 2?
+
+```{r "4 b) 2"}
+# a41 = "???" # add "yes" or "no"
+```
+
+We don't have a t-value that enables us to assess whether the differences are significant. One option is to use a t-test, yet, we are running a regression to test for significance.
+
+c) We will use both the 1-factor CAPM and the 3-factor model by Fama and French (1993) to regress *cmo_return* (see below) and store the results in `reg1f` and `reg3f`, respectively.
+
+info("Regression on Returns") # Run this line (Strg-Enter) to show info
+
+```{r "4.1 c)"}
+reg1f = lm(data = factor.dat, cmo_return ~ market_excess)
+
+reg3f = lm(data = factor.dat, cmo_return ~ market_excess + hml + smb)
+
+library(texreg)
+showreg(list(reg1f, reg3f), digits = 4,
+          stars = c(0.001,0.01,0.05,0.1),
+          custom.model.names = c("1-Factor Closed minus Open (1)", 
+                                  "3-Factor Closed minus Open (2)"),
+          custom.coef.names = c("Alpha", "Market Excess Return", "HML", "SMB"),
+          robust = TRUE, type = "HC1"
+)
+```
+
+Take a look at *Alpha*, the idiosyncratic return of closed-end funds compared to open-end funds. We see that *Alpha* is significantly smaller than zero, which means that closed-end funds yielded *lower* returns than there open-end competitors.
+
+As a consequence, we can reject the argument that closed-end funds charged higher fees because they offered higher returns.
+
+```{r "4.1 )"}
+"End"
+# Enter a space somewhere and run RTutor to finish this exercise
+```
+
+
+## Exercise 5 -- Recapitulation
+
+Congratulations! You have finished the problem set! I hope you gained a lot of new insights into the impact of law changes on funds' and investors' decision making. 
+
+One last excercise! Recapitulate the problem set.
+Assign the boolean operator TRUE to an argument, if it is true, and FALSE, if it is false.
+Example: a0 = "This problem set was fun" --> a0 = TRUE
+(Note: This time, do NOT use quotation marks.)
+
+```{r "5 "}
+# a1 = # "In Regime 2, Closed-end funds charged amortized fees that were lower than the up-front fees charged by open-end funds."
+
+# a2 = # "In Regime 2, a significantly higher proportion of closed-end equity funds started compared to Regime 1. During Regime 3, this proportion declined to levels of Regime 1."
+
+# a3 = # "Allowing heteroskedasticity changes the estimates' values"
+
+# a4 = # "During Regime 2, open-end funds offered lower returns than closed-end funds"
+```
+
+
+*References*
+
+- Anagol, Santosh; Kim, Hugh Hoikwang (2012): The Impact of Shrouded Fees: Evidence from a Natural Experiment in the Indian Mutual Funds Market.   In: American Economic Review 102 (1), p. 576-593. DOI: 10.1257/aer.102.1.576.
+- Fama, Eugene F.; French, Kenneth R. (1993): Common risk factors in the returns on stocks and bonds. In: Journal of Financial Economics 33 (1), p. 3-56. DOI: 10.1016/0304-405X(93)90023-5.
+- Angrist, Joshua D.; Pischke, Jörn-Steffen (2008): Mostly Harmless Econometrics: An Empiricist's Companion. 1st ed. Princeton University Press. ISBN-13: 978-0691120355 
+- Hayes, Andrew F.; Cai, Li (2007): Using heteroskedasticity-consistent standard error estimators in OLS regression: An introduction and software implementation. In: Behavior Research Methods 39 (4), S. 709-722. DOI: 10.3758/BF03192961.
+- Lumley, Thomas; Zeileis, Achim (2013): Robust Covariance Matrix Estimators. Model-robust standard error estimators for cross-sectional, 
+  time series, and longitudinal data. http://cran.r-project.org/web/packages/sandwich/sandwich.pdf. Accessed July 3, 2014
+- Stata (2014): Help for regress. http://www.stata.com/help.cgi?regress#AP2009. Accessed July 3, 2014  
+- White, Halbert (1980): A Heteroskedasticity-Consistent Covariance Matrix Estimator and a Direct Test for Heteroskedasticity.    In: Econometrica 48 (4), p. 817. DOI: 10.2307/1912934.
+- Wooldridge, Jeffrey M. (2006): Introductory econometrics. A modern approach. 3. ed., internat. student ed. Mason, Ohio [u.a.]: Thomson South -Western. ISBN: 0-324-32348-4
+
+
+Author: Tobias Markus Krabel      
+License: This problem set is licensed under [CC-BY 4.0 International](https://creativecommons.org/licenses/by/4.0/). 
+

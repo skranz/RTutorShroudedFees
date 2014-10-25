@@ -1,0 +1,60 @@
+var | descr
+
+fund_org | Fund_Org
+fund_id | Fund_ID
+fund_name | fund name
+type_fund | integer of fund type
+type_fund_name | name of fund type (EQUITY, ...)
+netassetvalue | net asset value of fund
+repurchaseprice | repurchase price of fund
+saleprice | sale price of fund
+date | Date
+year | year
+month | month
+month_year | an integer for each unique month-year combinatin
+nfo_open_date | NFO_Open_Date
+nfo_close_date | NFO_Close_Date
+actual_iie | the actual initial issues expenses fee in %
+initial_issue_expenses | the initial issue expenses fee in %
+entry_load_nfo | the entry load fee in %
+disclosure_nfo | Disclosure_NFO
+sensex_return | monthly_return of the sensex index
+new_interval_no | new_interval_no
+new_interval_amt | new_interval_amt
+new_assured_no | new_assured_no
+new_assured_amt | new_assured_amt
+exi_open_no | exi_open_no
+exi_open_amt | exi_open_amt
+exi_closed_no | exi_closed_no
+exi_closed_amt | exi_closed_amt
+exi_interval_no | exi_interval_no
+exi_interval_amt | exi_interval_amt
+exi_assured_no | exi_assured_no
+exi_assured_amt | exi_assured_amt
+
+# More detailed description
+new_open_no | the number of new open-end funds started in month t. 
+new_closed_no | the number of new closed-end funds started in month t.
+new_open_amt | the amount of money allocated by new open-end schemes in millions of 2009 U.S. dollars.
+new_closed_amt | the amount of money collected by new closed-end schemes in millions of 2009 U.S. dollars.
+net_flow_open_amt | the net flows to open-end funds calculated as the flows into new and existing open-end funds minus outflows of existing funds = *new_open_amt* + *ex_open_amt* - *open_red*. 
+net_flow_closed_amt | the net flows to closed-end funds calculated as the flows into new and existing closed-end funds minus outflows of existing funds = *new_closed_amt* + *ex_closed_amt* - *closed_red*.
+starts | the observed number of opened or closed funds started in month x year t.
+time_trend | a time trend variable that starts with 0 for our first observation, increasing by one for each subsequent *month_year*.
+sensex1_return | the one month lagged return of the BSE Sensex index in *month_year* t. That is, e.g., the one month lagged return in April 2006 is the actual return observed one month earlier, in March 2006.
+sensex3_return | the three month lagged return of the BSE Sensex index in *month_year* t. That is, e.g., the three month lagged return in April 2006 is the actual return observed three months earlier, in January 2006.
+regime2 | a dummy variable that is equal to 1 if the observation is from Regime 2.
+regime3 | the Regime 3 dummy.
+closed | a closed dummy that equals 1 if the respective fund is a closed-end fund.
+closed_regime2 | a so-called interaction between *closed* and *regime2*, that only equals 1 if both *closed* and *regime2* are equal to 1.
+closed_regime3 | the interaction between the closed and the Regime 3 dummy variables.
+open_raw | the average of *open_monthly_raw_return*,
+closed_raw | the average of *closed_monthly_raw_return*,
+open_marketadj | the average of *open_monthly_raw_return* mean_sensex_monthly*
+closed_marketadj | the average of *closed_monthly_raw_return* mean_sensex_monthly*.
+open_monthly_raw_return | monthly return on open-end funds.
+closed_monthly_raw_return | monthly return on closed-end funds. 
+mean_sensex_monthly | monthly return on the BSE Sensex Index used as a proxy for the market return. Multiply the columns with 100 to get the percentage return per month.
+cmo_return | *closed-excess* minus *open-excess*, used as the performance of closed-end funds compared to open-end funds.
+closed_excess | close-end funds' excess return calculated as raw return minus risk-free rate (*monthly_bill*).
+open_excess | open-end funds' excess return calculated as the raw return minus risk-free rate.
