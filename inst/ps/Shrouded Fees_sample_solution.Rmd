@@ -21,11 +21,16 @@ Authors:
   
 ```{r " "}
 library(RTutor)
-setwd("D:/libraries/RTutorShroudedFees/RTutorShroudedFees/inst/ps")
+rps.dir = "D:/libraries/RTutorShroudedFees/RTutorShroudedFees/inst/ps" 
+setwd(rps.dir)
 ps.name = "Shrouded Fees"; sol.file = paste0(ps.name,"_sol.Rmd")
 libs = c("ggplot2","ggthemes", "dplyr", "grid", "scales", "foreign", "sandwich", "texreg") # character vector of all packages you load in the problem set
 #name.rmd.chunks(sol.file,only.empty.chunks=FALSE)
-create.ps(sol.file=sol.file, ps.name=ps.name, user.name=NULL,libs=libs, extra.code.file = "The Impact of Shrouded Fees_extracode.r", var.txt.file = "shroudedvar.txt", stop.when.finished=FALSE)
+
+create.ps(sol.file=sol.file, ps.name=ps.name, user.name=NULL,libs=libs, extra.code.file = "The Impact of Shrouded Fees_extracode.r", var.txt.file = "shroudedvar.txt")
+
+
+work.dir = 
 show.shiny.ps(ps.name, load.sav=FALSE, launch.browser=TRUE, sample.solution=TRUE, is.solved=TRUE)
 
 
